@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vod.dao.MovieDao;
+import com.vod.model.Category;
 import com.vod.model.Movie;
 import com.vod.service.MovieService;
 
@@ -49,6 +50,18 @@ public class MovieServiceImpl implements MovieService {
 	@Override
 	public List<Movie> getByYear(Integer year) {
 		return dao.getByYear(year);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.vod.service.MovieService#filterBy(java.lang.Integer,
+	 * java.lang.Integer, java.lang.Integer, java.lang.Integer,
+	 * java.lang.Integer)
+	 */
+	@Override
+	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Integer countryId, Integer page) {
+		return dao.filterBy(orderId, category, year, countryId, page);
 	}
 
 }
