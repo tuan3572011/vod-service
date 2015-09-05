@@ -16,7 +16,15 @@ public interface MovieSerieDao {
 
 	public MovieSerie getById(Integer id);
 
-	public List<MovieSerie> getAll();
-
 	List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page);
+
+	/**
+	 * @param orderId
+	 * @param category
+	 * @param year
+	 * @param country
+	 * @param page
+	 * @return
+	 */
+	public Integer getFilterPage(Integer orderId, Category category, Integer year, Country country, Integer page);
 }

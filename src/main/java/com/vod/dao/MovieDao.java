@@ -13,8 +13,6 @@ public interface MovieDao {
 
 	public Movie get(Integer id);
 
-	public List<Movie> getAll();
-
 	/**
 	 * @param orderId
 	 * @param categoryId
@@ -24,4 +22,14 @@ public interface MovieDao {
 	 * @return
 	 */
 	List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page);
+
+	/**
+	 * @param orderId
+	 * @param category
+	 * @param year
+	 * @param country
+	 * @param page
+	 * @return
+	 */
+	public int getFilterPage(Integer orderId, Category category, Integer year, Country country, Integer page);
 }

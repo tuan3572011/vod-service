@@ -58,41 +58,6 @@ public class MovieSerieController {
 		}
 	}
 
-	/**
-	 * 
-	 * @param model
-	 * @return getAll MovieSerie
-	 */
-	@RequestMapping(value = "/serie/all", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-	public @ResponseBody ResponseEntity<List<MovieSearch>> getAllMovieSerie() {
-		List<MovieSerie> series = null;
-		List<MovieSearch> mvs = new ArrayList<MovieSearch>();
-		try {
-			series = serieService.getAll();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<List<MovieSearch>>(HttpStatus.NOT_FOUND);
-		}
-		if (series != null) {
-			for (MovieSerie serie : series) {
-				MovieSearch moS = new MovieSearch();
-				moS.setId(serie.getId());
-				moS.setType(serie.getType());
-				moS.setEngName(serie.getEngName());
-				moS.setName(serie.getName());
-				moS.setVnName(serie.getVnName());
-				moS.setImage(serie.getImage());
-				moS.setPublishedYear(serie.getPublishedYear());
-				moS.setImdb(serie.getImdb());
-				moS.setTrailer(serie.getTrailer());
-				mvs.add(moS);
-			}
-			return new ResponseEntity<List<MovieSearch>>(mvs, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<List<MovieSearch>>(HttpStatus.NOT_FOUND);
-		}
-	}
-
 	/***
 	 * 
 	 * @param movie
@@ -176,4 +141,17 @@ public class MovieSerieController {
 		}
 	}
 
+	@RequestMapping(value = "/serie/getFilterTotalPage/{orderId}/{categoryId}/{publishYear}/{countryId}/{page}", method = RequestMethod.GET)
+	public @ResponseBody Integer getFilterPage(@PathVariable("publishYear") Integer year,
+			@PathVariable("orderId") Integer orderId, @PathVariable("categoryId") Integer categoryId,
+			@PathVariable("countryId") Integer countryId, @PathVariable("page") Integer page) {
+
+		try {
+			Category category = cateService.get(categoryId);
+			Country country = countryService.get(countryId);
+			return serieService.getFilterTotalPage(orderId, category, year, country, page);
+		} catch (Exception e) {
+		}
+		return 0;
+	}
 }

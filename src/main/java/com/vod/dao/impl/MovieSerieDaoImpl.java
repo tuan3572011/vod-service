@@ -62,14 +62,6 @@ public class MovieSerieDaoImpl implements MovieSerieDao {
 		return movie;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<MovieSerie> getAll() {
-		Session session = sessionFactory.getCurrentSession();
-		List<MovieSerie> movies = session.createQuery("from MovieSerie m group by m.id").list();
-		return movies;
-	}
-
 	@Override
 	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page) {
 		Session session = sessionFactory.getCurrentSession();
@@ -137,5 +129,72 @@ public class MovieSerieDaoImpl implements MovieSerieDao {
 		if (count > 1) {
 			sqlCommand.append(" AND ");
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.vod.dao.MovieSerieDao#getFilterPage(java.lang.Integer,
+	 * com.vod.model.Category, java.lang.Integer, com.vod.model.Country,
+	 * java.lang.Integer)
+	 */
+	@Override
+	public Integer getFilterPage(Integer orderId, Category category, Integer year, Country country, Integer page) {
+		Session session = sessionFactory.getCurrentSession();
+
+		StringBuilder sqlCommand = new StringBuilder("from Movie m");
+		FilterBean filterBean = new FilterBean(orderId, category, year, country, page);
+		int countSearchBy = 0;
+		if (filterBean.isSearchAny()) {
+			sqlCommand.append(" WHERE ");
+			if (filterBean.isSearchByCategory()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				sqlCommand.append(" :category in elements (m.categories) ");
+
+			}
+			if (filterBean.isSearchByCountry()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				sqlCommand.append(" :country in elements (m.countries) ");
+			}
+			if (filterBean.isSearchByYear()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				String query = " m.publishedYear =:year ";
+				if (year == 2010) {
+					query = " m.publishedYear <=:year ";
+				}
+				sqlCommand.append(query);
+			}
+			if (filterBean.isSearchByOrder()) {
+				countSearchBy++;
+				if (orderId == 1) {
+					sqlCommand.append("  order by m.view DESC");
+				} else if (orderId == 2) {
+					sqlCommand.append("  order by m.rate DESC");
+				}
+			}
+
+		}
+		Query query = session.createQuery(sqlCommand.toString());
+		if (filterBean.isSearchByCategory()) {
+			query.setEntity("category", category);
+		}
+		if (filterBean.isSearchByCountry()) {
+			query.setEntity("country", country);
+
+		}
+		if (filterBean.isSearchByYear()) {
+			query.setInteger("year", year);
+		}
+
+		// do not change this
+		int rowNum = query.list().size();
+		int totalPageNum = rowNum / 16;
+		if (rowNum % 16 != 0) {
+			totalPageNum++;
+		}
+		return totalPageNum;
 	}
 }

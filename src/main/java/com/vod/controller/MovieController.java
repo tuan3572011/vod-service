@@ -51,37 +51,6 @@ public class MovieController {
 		}
 	}
 
-	@RequestMapping(value = "/movie/all", method = RequestMethod.GET)
-	public @ResponseBody ResponseEntity<List<MovieSearch>> doGetAll() {
-		List<Movie> movies = null;
-		List<MovieSearch> mvs = new ArrayList<MovieSearch>();
-		try {
-			movies = mService.getAll();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<List<MovieSearch>>(HttpStatus.NOT_FOUND);
-		}
-
-		if (movies != null) {
-			for (Movie f : movies) {
-				MovieSearch moS = new MovieSearch();
-				moS.setId(f.getId());
-				moS.setType(f.getType());
-				moS.setEngName(f.getEngName());
-				moS.setName(f.getName());
-				moS.setVnName(f.getVnName());
-				moS.setImage(f.getImage());
-				moS.setPublishedYear(f.getPublishedYear());
-				moS.setImdb(f.getImdb());
-				moS.setTrailer(f.getTrailer());
-				mvs.add(moS);
-			}
-			return new ResponseEntity<List<MovieSearch>>(mvs, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<List<MovieSearch>>(HttpStatus.NOT_FOUND);
-		}
-	}
-
 	@RequestMapping(value = "/movie/add", method = RequestMethod.POST, produces = "application/json")
 	public @ResponseBody ResponseEntity<Void> doSave(@Valid @RequestBody Movie movie) {
 		if (mService.add(movie)) {
@@ -101,7 +70,7 @@ public class MovieController {
 	}
 
 	@RequestMapping(value = "/movie/getBy/{orderId}/{categoryId}/{publishYear}/{countryId}/{page}", method = RequestMethod.GET)
-	public @ResponseBody ResponseEntity<List<MovieSearch>> doGetByYear(@PathVariable("publishYear") Integer year,
+	public @ResponseBody ResponseEntity<List<MovieSearch>> doFilter(@PathVariable("publishYear") Integer year,
 			@PathVariable("orderId") Integer orderId, @PathVariable("categoryId") Integer categoryId,
 			@PathVariable("countryId") Integer countryId, @PathVariable("page") Integer page) {
 		List<MovieSearch> mvs = new ArrayList<MovieSearch>();
@@ -131,6 +100,20 @@ public class MovieController {
 		} else {
 			return new ResponseEntity<List<MovieSearch>>(HttpStatus.NOT_FOUND);
 		}
+	}
+
+	@RequestMapping(value = "/movie/getFilterTotalPage/{orderId}/{categoryId}/{publishYear}/{countryId}/{page}", method = RequestMethod.GET)
+	public @ResponseBody Integer getFilterPage(@PathVariable("publishYear") Integer year,
+			@PathVariable("orderId") Integer orderId, @PathVariable("categoryId") Integer categoryId,
+			@PathVariable("countryId") Integer countryId, @PathVariable("page") Integer page) {
+		try {
+			Category category = cateService.get(categoryId);
+			Country country = countryService.get(countryId);
+			return mService.getFilterTotalPage(orderId, category, year, country, page);
+		} catch (Exception e) {
+
+		}
+		return 0;
 	}
 
 }

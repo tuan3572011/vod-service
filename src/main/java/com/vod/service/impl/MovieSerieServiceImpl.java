@@ -44,14 +44,20 @@ public class MovieSerieServiceImpl implements MovieSerieService {
 	}
 
 	@Override
-	public List<MovieSerie> getAll() {
-		// TODO Auto-generated method stub
-		return dao.getAll();
-	}
-
-	@Override
 	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page) {
 		return dao.filterBy(orderId, category, year, country, page);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.vod.service.MovieSerieService#getFilterPage(java.lang.Integer,
+	 * com.vod.model.Category, java.lang.Integer, com.vod.model.Country,
+	 * java.lang.Integer)
+	 */
+	@Override
+	public Integer getFilterTotalPage(Integer orderId, Category category, Integer year, Country country, Integer page) {
+		return dao.getFilterPage(orderId, category, year, country, page);
 	}
 
 }

@@ -16,7 +16,15 @@ public interface MovieSerieService {
 
 	public MovieSerie getById(Integer id);
 
-	public List<MovieSerie> getAll();
-
 	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page);
+
+	/**
+	 * @param orderId
+	 * @param category
+	 * @param year
+	 * @param country
+	 * @param page
+	 * @return
+	 */
+	public Integer getFilterTotalPage(Integer orderId, Category category, Integer year, Country country, Integer page);
 }
