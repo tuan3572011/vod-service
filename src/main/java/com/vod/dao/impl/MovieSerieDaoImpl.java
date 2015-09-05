@@ -2,12 +2,17 @@ package com.vod.dao.impl;
 
 import java.util.List;
 
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.vod.dao.MovieSerieDao;
+import com.vod.model.Category;
+import com.vod.model.Country;
+import com.vod.model.FilterBean;
+import com.vod.model.Movie;
 import com.vod.model.MovieSerie;
 
 @Repository
@@ -52,8 +57,7 @@ public class MovieSerieDaoImpl implements MovieSerieDao {
 	@Override
 	public MovieSerie getById(Integer id) {
 		Session session = sessionFactory.getCurrentSession();
-		MovieSerie movie = (MovieSerie) session
-				.createQuery("from MovieSerie m where m.id = :id")
+		MovieSerie movie = (MovieSerie) session.createQuery("from MovieSerie m where m.id = :id")
 				.setParameter("id", id).uniqueResult();
 		return movie;
 	}
@@ -62,41 +66,76 @@ public class MovieSerieDaoImpl implements MovieSerieDao {
 	@Override
 	public List<MovieSerie> getAll() {
 		Session session = sessionFactory.getCurrentSession();
-		List<MovieSerie> movies = session.createQuery(
-				"from MovieSerie m group by m.id").list();
+		List<MovieSerie> movies = session.createQuery("from MovieSerie m group by m.id").list();
 		return movies;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<MovieSerie> getByRate() {
+	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page) {
 		Session session = sessionFactory.getCurrentSession();
-		List<MovieSerie> movieSeries = session.createQuery(
-				"from MovieSerie m group by m.id order by m.rate DESC").list();
-		return movieSeries;
-	}
+		// from Cat as cat where cat.mate.name like '%s%'
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<MovieSerie> getByView() {
-		Session session = sessionFactory.getCurrentSession();
-		List<MovieSerie> movieSeries = session.createQuery(
-				"from MovieSerie m group by m.id order by m.view DESC").list();
-		return movieSeries;
-	}
+		// select distinct u from SystemUser u
+		// join u.userGroups g
+		// join u.organisations o
+		// where 3 in elements(g.permissions) and
+		// o.id not in (?)
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<MovieSerie> getByYear(Integer year) {
-		Session session = sessionFactory.getCurrentSession();
-		String query = "from MovieSerie m where m.publishedYear = '" + year
-				+ "' group by m.id";
-		if (year == 2010) {
-			query = "from MovieSerie m where m.publishedYear <= '" + year
-					+ "' group by m.id";
+		StringBuilder sqlCommand = new StringBuilder("from Movie m");
+		FilterBean filterBean = new FilterBean(orderId, category, year, country, page);
+		int countSearchBy = 0;
+		if (filterBean.isSearchAny()) {
+			sqlCommand.append(" WHERE ");
+			if (filterBean.isSearchByCategory()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				sqlCommand.append(" :category in elements (m.categories) ");
+
+			}
+			if (filterBean.isSearchByCountry()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				sqlCommand.append(" :country in elements (m.countries) ");
+			}
+			if (filterBean.isSearchByYear()) {
+				countSearchBy++;
+				this.addANDCommand(countSearchBy, sqlCommand);
+				String query = " m.publishedYear =:year ";
+				if (year == 2010) {
+					query = " m.publishedYear <=:year ";
+				}
+				sqlCommand.append(query);
+			}
+			if (filterBean.isSearchByOrder()) {
+				countSearchBy++;
+				if (orderId == 1) {
+					sqlCommand.append("  order by m.view DESC");
+				} else if (orderId == 2) {
+					sqlCommand.append("  order by m.rate DESC");
+				}
+			}
+
 		}
-		List<MovieSerie> movies = session.createQuery(query).list();
+		Query query = session.createQuery(sqlCommand.toString());
+		if (filterBean.isSearchByCategory()) {
+			query.setEntity("category", category);
+		}
+		if (filterBean.isSearchByCountry()) {
+			query.setEntity("country", country);
+
+		}
+		if (filterBean.isSearchByYear()) {
+			query.setInteger("year", year);
+		}
+		query.setFirstResult(page * 16 - 16);
+		query.setMaxResults(16);
+		List<Movie> movies = query.list();
 		return movies;
 	}
 
+	private void addANDCommand(int count, StringBuilder sqlCommand) {
+		if (count > 1) {
+			sqlCommand.append(" AND ");
+		}
+	}
 }

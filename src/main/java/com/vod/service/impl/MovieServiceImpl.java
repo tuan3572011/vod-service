@@ -38,20 +38,6 @@ public class MovieServiceImpl implements MovieService {
         return dao.getAll();
     }
 
-    @Override
-    public List<Movie> getByRate() {
-        return dao.getByRate();
-    }
-
-    @Override
-    public List<Movie> getByView() {
-        return dao.getByView();
-    }
-
-    @Override
-    public List<Movie> getByYear(Integer year) {
-        return dao.getByYear(year);
-    }
 
     /*
      * (non-Javadoc)
@@ -60,10 +46,9 @@ public class MovieServiceImpl implements MovieService {
      * java.lang.Integer, java.lang.Integer, java.lang.Integer,
      * java.lang.Integer)
      */
-    @Override
-    public List<Movie> filterBy(Integer orderId, Category category,
-            Integer year, Country country, Integer page) {
-        return dao.filterBy(orderId, category, year, country, page);
-    }
+	@Override
+	public List<Movie> filterBy(Integer orderId, Category category, Integer year, Country country, Integer page) {
+		return dao.filterBy(orderId, category, year, country, page);
+	}
 
 }
